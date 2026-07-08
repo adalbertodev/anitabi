@@ -6,11 +6,7 @@ plugins {
 
 android {
     namespace = "dev.adalbertodev.anitabi"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "ev.adalbertodev.anitabi"
