@@ -1,0 +1,13 @@
+query SearchAnime($search: String) {
+    Page(page: 1, perPage: 20) {
+        media(search: $search, type: ANIME) {
+            id
+            title {
+                userPreferred
+            }
+            coverImage {
+                large
+            }
+        }
+    }
+}

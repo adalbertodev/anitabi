@@ -1,4 +1,4 @@
-package ev.adalbertodev.anitabi.ui.theme
+package dev.adalbertodev.anitabi.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

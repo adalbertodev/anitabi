@@ -1,4 +1,4 @@
-package ev.adalbertodev.anitabi
+package dev.adalbertodev.anitabi
 
 import org.junit.Test
 

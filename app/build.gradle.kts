@@ -1,10 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.apollo)
 }
 
 android {
-    namespace = "ev.adalbertodev.anitabi"
+    namespace = "dev.adalbertodev.anitabi"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -53,4 +54,15 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.apollo.runtime)
+}
+
+apollo {
+    service("anilist") {
+        packageName.set("dev.adalbertodev.anitabi.graphql") // p. ej. dev.tunombre.anitabi.graphql
+        introspection {
+            endpointUrl.set("https://graphql.anilist.co")
+            schemaFile.set(file("src/main/graphql/schema.graphqls"))
+        }
+    }
 }
