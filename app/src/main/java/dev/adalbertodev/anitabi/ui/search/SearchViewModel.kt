@@ -10,18 +10,34 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class SearchViewModel : ViewModel() {
-    private val _results = MutableStateFlow<List<String>>(emptyList())
-    val results: StateFlow<List<String>> = _results
+    private val _uiState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
+    val uiState: StateFlow<SearchUiState> = _uiState
 
     fun search(text: String) {
         viewModelScope.launch {
+            _uiState.value = SearchUiState.Loading
+
             val response = ApolloProvider.client
                 .query(SearchAnimeQuery(Optional.present(text)))
                 .execute()
 
-            _results.value = response.data?.Page?.media
-                ?.mapNotNull { it?.title?.userPreferred }
-                ?: emptyList()
+            val media = response.data?.Page?.media
+
+            _uiState.value = if (media != null) {
+                SearchUiState.Success(
+                    media.mapNotNull { item ->
+                        item?.let {
+                            AnimeSearchResult(
+                                id = it.id,
+                                title = it.title?.userPreferred ?: "Sin titulo",
+                                coverUrl = it.coverImage?.large
+                            )
+                        }
+                    }
+                )
+            } else {
+                SearchUiState.Error("No se pudo completar la búsqueda")
+            }
         }
     }
 }
