@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import dev.adalbertodev.anitabi.ui.login.LoginScreen
 import dev.adalbertodev.anitabi.ui.search.SearchScreen
 import dev.adalbertodev.anitabi.ui.theme.AniTabiTheme
 
@@ -22,7 +23,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AniTabiTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    SearchScreen()
+                    LoginScreen()
                 }
             }
         }

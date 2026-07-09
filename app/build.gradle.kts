@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.apollo.runtime)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.androidx.browser)
 }
 
 apollo {
