@@ -3,30 +3,26 @@ package dev.adalbertodev.anitabi
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
-import dev.adalbertodev.anitabi.ui.login.LoginScreen
-import dev.adalbertodev.anitabi.ui.theme.AniTabiTheme
+import androidx.lifecycle.lifecycleScope
+import dev.adalbertodev.anitabi.data.SessionStore
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+
+    private lateinit var sessionStore: SessionStore
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sessionStore = SessionStore(applicationContext)
         enableEdgeToEdge()
         handleAuthRedirect(intent)
 
         setContent {
-            AniTabiTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) {
-                    LoginScreen()
-                }
-            }
+            AniTabiApp(sessionStore)
         }
     }
 
@@ -47,9 +43,8 @@ class MainActivity : ComponentActivity() {
             .firstOrNull { it.size == 2 && it[0] == "access_token" }
             ?.get(1)
 
-        if(token != null) {
-            Log.d("AniTabiAuth", "Token recibido, longitud: ${token.length}")
-            Toast.makeText(this, "Login correcto ✔", Toast.LENGTH_SHORT).show()
+        if (token != null) {
+            lifecycleScope.launch { sessionStore.saveToken(token) }
         }
     }
 }
