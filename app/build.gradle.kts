@@ -9,7 +9,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "ev.adalbertodev.anitabi"
+        applicationId = "dev.adalbertodev.anitabi"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
