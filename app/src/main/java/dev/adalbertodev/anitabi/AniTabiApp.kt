@@ -9,8 +9,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.adalbertodev.anitabi.data.SessionStore
+import dev.adalbertodev.anitabi.ui.lists.ViewerUiState
+import dev.adalbertodev.anitabi.ui.lists.ViewerViewModel
 import dev.adalbertodev.anitabi.ui.login.LoginScreen
+import dev.adalbertodev.anitabi.ui.search.SearchViewModel
 import kotlinx.coroutines.flow.map
 
 sealed interface Session {
@@ -34,8 +38,19 @@ fun AniTabiApp(sessionStore: SessionStore) {
 }
 
 @Composable
-fun ListPlaceholderScreen() {
+fun ListPlaceholderScreen(viewModel: ViewerViewModel = viewModel()) {
+    val state by viewModel.uiState.collectAsState()
+
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("Mis listas — placeholder")
+    }
+
+    when(val s = state) {
+        ViewerUiState.Loading -> Box(Modifier.fillMaxSize())
+        ViewerUiState.Error -> Box(Modifier.fillMaxSize())
+        is ViewerUiState.Success -> {
+            Text("Hola, ${s.name}")
+            Text("Formato de puntuación: ${s.scoreFormat}")
+        }
     }
 }

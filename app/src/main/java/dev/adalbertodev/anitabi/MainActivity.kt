@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import dev.adalbertodev.anitabi.data.ApolloProvider
 import dev.adalbertodev.anitabi.data.SessionStore
 import kotlinx.coroutines.launch
 
@@ -18,6 +19,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sessionStore = SessionStore(applicationContext)
+        ApolloProvider.init(sessionStore)
         enableEdgeToEdge()
         handleAuthRedirect(intent)
 
