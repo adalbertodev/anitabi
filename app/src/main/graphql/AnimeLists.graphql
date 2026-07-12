@@ -1,0 +1,19 @@
+query AnimeLists($userId: Int!) {
+    MediaListCollection(userId: $userId, type: ANIME) {
+        lists {
+            isCustomList
+            entries {
+                id
+                status
+                progress
+                updatedAt
+                media {
+                    id
+                    title { userPreferred }
+                    coverImage { large }
+                    episodes
+                }
+            }
+        }
+    }
+}
