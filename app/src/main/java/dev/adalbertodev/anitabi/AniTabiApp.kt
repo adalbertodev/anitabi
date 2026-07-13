@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.adalbertodev.anitabi.data.SessionStore
+import dev.adalbertodev.anitabi.ui.lists.AnimeListCard
 import dev.adalbertodev.anitabi.ui.lists.ListUiState
 import dev.adalbertodev.anitabi.ui.lists.ListsViewModel
 import dev.adalbertodev.anitabi.ui.lists.ViewerUiState
@@ -54,7 +55,7 @@ fun ListPlaceholderScreen(viewModel: ListsViewModel = viewModel()) {
         ListUiState.Error -> Box(Modifier.fillMaxSize())
         is ListUiState.Success -> LazyColumn {
             items(s.entries, key = {it.entryId}) { entry ->
-                Text("${entry.title} — ${entry.progress}/${entry.totalEpisodes ?: "?"} [${entry.status}]")
+                AnimeListCard(entry)
             }
         }
     }

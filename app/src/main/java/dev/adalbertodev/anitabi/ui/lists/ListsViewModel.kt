@@ -40,6 +40,7 @@ class ListsViewModel : ViewModel() {
                         .flatMap { it?.entries.orEmpty().asSequence() }
                         .mapNotNull { it?.toUiModel() }
                         .distinctBy { it.entryId }
+                        .sortedByDescending { it.updatedAt }
                         .toList()
                 )
             } else {
