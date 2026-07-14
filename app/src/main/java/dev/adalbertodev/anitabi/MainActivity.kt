@@ -12,8 +12,6 @@ import dev.adalbertodev.anitabi.data.SessionStore
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-
     private lateinit var sessionStore: SessionStore
 
     override fun onCreate(savedInstanceState: Bundle?) {

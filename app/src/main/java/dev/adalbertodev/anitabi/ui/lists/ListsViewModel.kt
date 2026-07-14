@@ -1,6 +1,5 @@
 package dev.adalbertodev.anitabi.ui.lists
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.adalbertodev.anitabi.data.ApolloProvider
@@ -11,20 +10,27 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 sealed interface ListUiState {
-    data object Loading: ListUiState
-    data class Success(val entries: List<AnimeListEntry>) : ListUiState
-    data object Error: ListUiState
+    data object Loading : ListUiState
+    data class Success(
+        val entries: List<AnimeListEntry>,
+        val activeFilter: ListFilter
+    ) : ListUiState
+
+    data object Error : ListUiState
 }
 
 class ListsViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<ListUiState>(ListUiState.Loading)
-    val uiState : StateFlow<ListUiState> = _uiState
+    val uiState: StateFlow<ListUiState> = _uiState
+
+    private var allEntries: List<AnimeListEntry> = emptyList()
+    private var activeFilter: ListFilter = ListFilter.WATCHING
 
     init {
         viewModelScope.launch {
             val viewerId = ApolloProvider.client.query(ViewerQuery()).execute().data?.Viewer?.id
 
-            if(viewerId == null) {
+            if (viewerId == null) {
                 _uiState.value = ListUiState.Error
                 return@launch
             }
@@ -33,19 +39,38 @@ class ListsViewModel : ViewModel() {
 
             val lists = response.data?.MediaListCollection?.lists
 
-            _uiState.value = if (lists != null) {
-                ListUiState.Success(
-                    lists.asSequence()
-                        .filter { it?.isCustomList != true }
-                        .flatMap { it?.entries.orEmpty().asSequence() }
-                        .mapNotNull { it?.toUiModel() }
-                        .distinctBy { it.entryId }
-                        .sortedByDescending { it.updatedAt }
-                        .toList()
-                )
-            } else {
-                ListUiState.Error
+            if (lists != null) {
+                allEntries = lists.asSequence()
+                    .filter { it?.isCustomList != true }
+                    .flatMap { it?.entries.orEmpty().asSequence() }
+                    .mapNotNull { it?.toUiModel() }
+                    .distinctBy { it.entryId }
+                    .sortedByDescending { it.updatedAt }
+                    .toList()
+
+                applyFilter()
             }
         }
+    }
+
+    fun setFilter(filter: ListFilter) {
+        activeFilter = filter
+        applyFilter()
+    }
+
+    private fun applyFilter() {
+        _uiState.value = ListUiState.Success(
+            entries = allEntries.filter { it.matches(activeFilter) },
+            activeFilter = activeFilter
+        )
+    }
+
+    private fun AnimeListEntry.matches(filter: ListFilter) = when (filter) {
+        ListFilter.ALL -> true
+        ListFilter.WATCHING -> status == EntryStatus.WATCHING
+        ListFilter.COMPLETED -> status == EntryStatus.COMPLETED
+        ListFilter.PAUSED -> status == EntryStatus.PAUSED
+        ListFilter.DROPPED -> status == EntryStatus.DROPPED
+        ListFilter.PLANNING -> status == EntryStatus.PLANNING
     }
 }

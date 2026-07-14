@@ -15,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.adalbertodev.anitabi.data.SessionStore
 import dev.adalbertodev.anitabi.ui.lists.AnimeListCard
 import dev.adalbertodev.anitabi.ui.lists.ListUiState
+import dev.adalbertodev.anitabi.ui.lists.ListsScreen
 import dev.adalbertodev.anitabi.ui.lists.ListsViewModel
 import dev.adalbertodev.anitabi.ui.lists.ViewerUiState
 import dev.adalbertodev.anitabi.ui.lists.ViewerViewModel
@@ -38,25 +39,7 @@ fun AniTabiApp(sessionStore: SessionStore) {
     when(session) {
         Session.Loading -> Box(Modifier.fillMaxSize())
         Session.LoggedOut -> LoginScreen()
-        is Session.LoggedIn -> ListPlaceholderScreen()
+        is Session.LoggedIn -> ListsScreen()
     }
 }
 
-@Composable
-fun ListPlaceholderScreen(viewModel: ListsViewModel = viewModel()) {
-    val state by viewModel.uiState.collectAsState()
-
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Mis listas — placeholder")
-    }
-
-    when(val s = state) {
-        ListUiState.Loading -> Box(Modifier.fillMaxSize())
-        ListUiState.Error -> Box(Modifier.fillMaxSize())
-        is ListUiState.Success -> LazyColumn {
-            items(s.entries, key = {it.entryId}) { entry ->
-                AnimeListCard(entry)
-            }
-        }
-    }
-}
