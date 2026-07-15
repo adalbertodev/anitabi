@@ -67,7 +67,7 @@ class ListsViewModel : ViewModel() {
 
     private fun AnimeListEntry.matches(filter: ListFilter) = when (filter) {
         ListFilter.ALL -> true
-        ListFilter.WATCHING -> status == EntryStatus.WATCHING
+        ListFilter.WATCHING -> status == EntryStatus.WATCHING || status == EntryStatus.REPEATING
         ListFilter.COMPLETED -> status == EntryStatus.COMPLETED
         ListFilter.PAUSED -> status == EntryStatus.PAUSED
         ListFilter.DROPPED -> status == EntryStatus.DROPPED
