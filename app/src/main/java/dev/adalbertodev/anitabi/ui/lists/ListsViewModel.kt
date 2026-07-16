@@ -28,6 +28,9 @@ class ListsViewModel : ViewModel() {
     private var allEntries: List<AnimeListEntry> = emptyList()
     private var activeFilter: ListFilter = ListFilter.WATCHING
 
+    private var _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
     init {
         viewModelScope.launch {
             val viewerId = ApolloProvider.client.query(ViewerQuery()).execute().data?.Viewer?.id
@@ -54,33 +57,59 @@ class ListsViewModel : ViewModel() {
         }
     }
 
+    fun onErrorShown() {
+        _errorMessage.value = null
+    }
+
     fun setFilter(filter: ListFilter) {
         activeFilter = filter
         applyFilter()
     }
 
-    fun incrementProgress(entry: AnimeListEntry) {
+    fun incrementProgress(entryId: Int) {
+        val current = allEntries.firstOrNull { it.entryId == entryId } ?: return
+        val snapshot = current
+
+        val optimistic = current.copy(
+            progress = current.progress + 1,
+            updatedAt = nowEpochSeconds()
+        )
+
+        replaceEntry(optimistic)
+        applyFilter()
+
         viewModelScope.launch {
             val response = ApolloProvider.client
-                .mutation(SaveProgressMutation(
-                    entryId = Optional.present(entry.entryId),
-                    progress = Optional.present(entry.progress + 1)
-                ))
+                .mutation(
+                    SaveProgressMutation(
+                        entryId = Optional.present(entryId),
+                        progress = Optional.present(optimistic.progress)
+                    )
+                )
                 .execute()
 
             val saved = response.data?.SaveMediaListEntry
 
-            if(saved != null) {
-                allEntries = allEntries.map {
-                    if(it.entryId == entry.entryId) it.copy(
-                        progress = saved.progress ?: it.progress,
-                        updatedAt = saved.updatedAt ?: it.updatedAt
-                    ) else it
-                }
+            if (saved != null) {
+                replaceEntry(
+                    optimistic.copy(
+                        progress = saved.progress ?: optimistic.progress,
+                        updatedAt = saved.updatedAt ?: optimistic.updatedAt
+                    )
+                )
+            } else {
+                replaceEntry(snapshot)
+                _errorMessage.value = "No se pudo guardar. Progreso invertido."
             }
 
             applyFilter()
         }
+    }
+
+    private fun nowEpochSeconds() = (System.currentTimeMillis() / 1000).toInt()
+
+    private fun replaceEntry(updated: AnimeListEntry) {
+        allEntries = allEntries.map { if (it.entryId == updated.entryId) updated else it }
     }
 
     private fun applyFilter() {

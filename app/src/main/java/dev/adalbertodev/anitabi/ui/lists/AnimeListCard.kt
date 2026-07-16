@@ -25,10 +25,12 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 
 @Composable
-fun AnimeListCard(entry: AnimeListEntry, onIncrement : (AnimeListEntry) -> Unit) {
-    Card(modifier = Modifier
-        .fillMaxSize()
-        .padding(vertical = 4.dp)) {
+fun AnimeListCard(entry: AnimeListEntry, onIncrement: (Int) -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 4.dp)
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
                 model = entry.coverUrl,
@@ -39,9 +41,11 @@ fun AnimeListCard(entry: AnimeListEntry, onIncrement : (AnimeListEntry) -> Unit)
                 contentScale = ContentScale.Crop
             )
 
-            Column(modifier = Modifier
-                .padding(horizontal = 12.dp)
-                .weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .weight(1f)
+            ) {
                 Text(
                     text = entry.title,
                     maxLines = 2,
@@ -53,7 +57,7 @@ fun AnimeListCard(entry: AnimeListEntry, onIncrement : (AnimeListEntry) -> Unit)
                     style = MaterialTheme.typography.bodySmall
                 )
 
-                if(entry.status == EntryStatus.REPEATING) {
+                if (entry.status == EntryStatus.REPEATING) {
                     Spacer(Modifier.width(6.dp))
                     Icon(
                         imageVector = Icons.Default.Refresh,
@@ -63,7 +67,10 @@ fun AnimeListCard(entry: AnimeListEntry, onIncrement : (AnimeListEntry) -> Unit)
                 }
             }
 
-            IconButton(onClick = { onIncrement(entry) }, enabled = entry.totalEpisodes == null || entry.progress < entry.totalEpisodes) {
+            IconButton(
+                onClick = { onIncrement(entry.entryId) },
+                enabled = entry.totalEpisodes == null || entry.progress < entry.totalEpisodes
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "+1 episodio")
             }
         }

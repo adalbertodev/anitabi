@@ -1,6 +1,5 @@
 package dev.adalbertodev.anitabi.ui.lists
 
-import android.R
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +15,11 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,8 +35,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun ListsScreen(viewModel: ListsViewModel = viewModel()) {
     val state by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.onErrorShown()
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState)},
         floatingActionButton = {
             val s = state
 
@@ -46,10 +58,15 @@ fun ListsScreen(viewModel: ListsViewModel = viewModel()) {
             }
         }
     ) { padding ->
-        Box(modifier = Modifier
-            .padding(padding)
-            .fillMaxSize()) {
-            Log.d("Padding", padding.calculateLeftPadding(LocalLayoutDirection.current).value.toString())
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+            Log.d(
+                "Padding",
+                padding.calculateLeftPadding(LocalLayoutDirection.current).value.toString()
+            )
             when (val s = state) {
                 ListUiState.Loading -> CircularProgressIndicator(
                     Modifier.align(Alignment.Center)
@@ -58,10 +75,12 @@ fun ListsScreen(viewModel: ListsViewModel = viewModel()) {
                 ListUiState.Error -> Text("No se pudieron cargar tus listas")
 
                 is ListUiState.Success -> {
-                    if(s.entries.isEmpty()) {
+                    if (s.entries.isEmpty()) {
                         Text(
                             text = s.activeFilter.emptyMessage,
-                            modifier = Modifier.align(Alignment.Center).padding(32.dp),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(32.dp),
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyLarge
                         )
