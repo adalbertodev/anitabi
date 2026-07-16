@@ -68,7 +68,7 @@ fun ListsScreen(viewModel: ListsViewModel = viewModel()) {
                     } else {
                         LazyColumn {
                             items(s.entries, key = { it.entryId }) { entry ->
-                                AnimeListCard(entry)
+                                AnimeListCard(entry, onIncrement = viewModel::incrementProgress)
                             }
                         }
                     }

@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,17 +25,23 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 
 @Composable
-fun AnimeListCard(entry: AnimeListEntry) {
-    Card(modifier = Modifier.fillMaxSize().padding(vertical = 4.dp)) {
+fun AnimeListCard(entry: AnimeListEntry, onIncrement : (AnimeListEntry) -> Unit) {
+    Card(modifier = Modifier
+        .fillMaxSize()
+        .padding(vertical = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
                 model = entry.coverUrl,
                 contentDescription = entry.title,
-                modifier = Modifier.width(64.dp).height(90.dp),
+                modifier = Modifier
+                    .width(64.dp)
+                    .height(90.dp),
                 contentScale = ContentScale.Crop
             )
 
-            Column(modifier = Modifier.padding(horizontal = 12.dp)) {
+            Column(modifier = Modifier
+                .padding(horizontal = 12.dp)
+                .weight(1f)) {
                 Text(
                     text = entry.title,
                     maxLines = 2,
@@ -53,6 +61,10 @@ fun AnimeListCard(entry: AnimeListEntry) {
                         modifier = Modifier.size(14.dp)
                     )
                 }
+            }
+
+            IconButton(onClick = { onIncrement(entry) }, enabled = entry.totalEpisodes == null || entry.progress < entry.totalEpisodes) {
+                Icon(Icons.Default.Add, contentDescription = "+1 episodio")
             }
         }
     }
