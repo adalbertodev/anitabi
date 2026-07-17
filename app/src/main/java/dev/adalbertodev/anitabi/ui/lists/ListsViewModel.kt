@@ -7,9 +7,12 @@ import dev.adalbertodev.anitabi.data.ApolloProvider
 import dev.adalbertodev.anitabi.graphql.AnimeListsQuery
 import dev.adalbertodev.anitabi.graphql.SaveProgressMutation
 import dev.adalbertodev.anitabi.graphql.ViewerQuery
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 sealed interface ListUiState {
     data object Loading : ListUiState
@@ -30,6 +33,9 @@ class ListsViewModel : ViewModel() {
 
     private var _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val debounceJobs = mutableMapOf<Int, Job>()
+    private val burstSnapshots = mutableMapOf<Int, AnimeListEntry>()
 
     init {
         viewModelScope.launch {
@@ -68,7 +74,10 @@ class ListsViewModel : ViewModel() {
 
     fun incrementProgress(entryId: Int) {
         val current = allEntries.firstOrNull { it.entryId == entryId } ?: return
-        val snapshot = current
+
+        if(burstSnapshots[entryId] == null) {
+            burstSnapshots[entryId] = current
+        }
 
         val optimistic = current.copy(
             progress = current.progress + 1,
@@ -78,32 +87,43 @@ class ListsViewModel : ViewModel() {
         replaceEntry(optimistic)
         applyFilter()
 
-        viewModelScope.launch {
-            val response = ApolloProvider.client
-                .mutation(
-                    SaveProgressMutation(
-                        entryId = Optional.present(entryId),
-                        progress = Optional.present(optimistic.progress)
-                    )
-                )
-                .execute()
+        debounceJobs[entryId]?.cancel()
+        debounceJobs[entryId] = viewModelScope.launch {
+            delay(1_000.milliseconds)
 
-            val saved = response.data?.SaveMediaListEntry
-
-            if (saved != null) {
-                replaceEntry(
-                    optimistic.copy(
-                        progress = saved.progress ?: optimistic.progress,
-                        updatedAt = saved.updatedAt ?: optimistic.updatedAt
-                    )
-                )
-            } else {
-                replaceEntry(snapshot)
-                _errorMessage.value = "No se pudo guardar. Progreso invertido."
-            }
-
-            applyFilter()
+            sendProgress(entryId)
         }
+    }
+
+    private suspend fun sendProgress(entryId: Int) {
+        val snapshot = burstSnapshots.remove(entryId) ?: return
+        val target = allEntries.firstOrNull {it.entryId == entryId} ?: return
+
+        val response = ApolloProvider.client
+            .mutation(
+                SaveProgressMutation(
+                    entryId = Optional.present(entryId),
+                    progress = Optional.present(target.progress)
+                )
+            )
+            .execute()
+
+        val saved = response.data?.SaveMediaListEntry
+
+        if (saved != null) {
+            replaceEntry(
+                target.copy(
+                    progress = saved.progress ?: target.progress,
+                    updatedAt = saved.updatedAt ?: target.updatedAt
+                )
+            )
+        } else {
+            replaceEntry(snapshot)
+            _errorMessage.value = "No se pudo guardar. Progreso revertido."
+        }
+
+        debounceJobs.remove(entryId)
+        applyFilter()
     }
 
     private fun nowEpochSeconds() = (System.currentTimeMillis() / 1000).toInt()
