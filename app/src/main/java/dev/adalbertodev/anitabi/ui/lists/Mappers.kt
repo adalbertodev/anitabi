@@ -13,15 +13,17 @@ fun AnimeListsQuery.Entry.toUiModel() : AnimeListEntry? {
         coverUrl = media.coverImage?.large,
         progress = progress ?: 0,
         totalEpisodes = media.episodes,
-        status = when(status) {
-            MediaListStatus.CURRENT -> EntryStatus.WATCHING
-            MediaListStatus.REPEATING -> EntryStatus.REPEATING
-            MediaListStatus.COMPLETED -> EntryStatus.COMPLETED
-            MediaListStatus.PAUSED -> EntryStatus.PAUSED
-            MediaListStatus.DROPPED -> EntryStatus.DROPPED
-            MediaListStatus.PLANNING -> EntryStatus.PLANNING
-            else -> return null
-        },
+        status = status?.toEntryStatus() ?: EntryStatus.WATCHING,
         updatedAt = updatedAt ?: 0
     )
+}
+
+fun MediaListStatus.toEntryStatus(): EntryStatus? = when (this) {
+    MediaListStatus.CURRENT -> EntryStatus.WATCHING
+    MediaListStatus.REPEATING -> EntryStatus.REPEATING
+    MediaListStatus.COMPLETED -> EntryStatus.COMPLETED
+    MediaListStatus.PAUSED -> EntryStatus.PAUSED
+    MediaListStatus.DROPPED -> EntryStatus.DROPPED
+    MediaListStatus.PLANNING -> EntryStatus.PLANNING
+    else -> null
 }

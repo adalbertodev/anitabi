@@ -24,6 +24,8 @@ sealed interface ListUiState {
     data object Error : ListUiState
 }
 
+data class CompletionEvent(val entryId: Int, val title: String)
+
 class ListsViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<ListUiState>(ListUiState.Loading)
     val uiState: StateFlow<ListUiState> = _uiState
@@ -36,6 +38,11 @@ class ListsViewModel : ViewModel() {
 
     private val debounceJobs = mutableMapOf<Int, Job>()
     private val burstSnapshots = mutableMapOf<Int, AnimeListEntry>()
+
+    private val completionSnapshots = mutableMapOf<Int, AnimeListEntry>()
+    private val _completionEvent = MutableStateFlow<CompletionEvent?>(null)
+    val completionEvent: StateFlow<CompletionEvent?> = _completionEvent
+
 
     init {
         viewModelScope.launch {
@@ -65,6 +72,10 @@ class ListsViewModel : ViewModel() {
 
     fun onErrorShown() {
         _errorMessage.value = null
+    }
+
+    fun onCompletionShown() {
+        _completionEvent.value = null
     }
 
     fun setFilter(filter: ListFilter) {
@@ -111,12 +122,20 @@ class ListsViewModel : ViewModel() {
         val saved = response.data?.SaveMediaListEntry
 
         if (saved != null) {
+            val newStatus = saved.status?.toEntryStatus() ?: target.status
+
             replaceEntry(
                 target.copy(
                     progress = saved.progress ?: target.progress,
-                    updatedAt = saved.updatedAt ?: target.updatedAt
+                    updatedAt = saved.updatedAt ?: target.updatedAt,
+                    status = newStatus
                 )
             )
+
+            if(newStatus == EntryStatus.COMPLETED && snapshot.status != EntryStatus.COMPLETED) {
+                completionSnapshots[entryId] = snapshot
+                _completionEvent.value = CompletionEvent(entryId, target.title)
+            }
         } else {
             replaceEntry(snapshot)
             _errorMessage.value = "No se pudo guardar. Progreso revertido."

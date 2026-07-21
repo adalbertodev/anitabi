@@ -37,11 +37,19 @@ fun ListsScreen(viewModel: ListsViewModel = viewModel()) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val completionEvent by viewModel.completionEvent.collectAsState()
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.onErrorShown()
+        }
+    }
+
+    LaunchedEffect(completionEvent) {
+        completionEvent?.let {
+            snackbarHostState.showSnackbar("«${it.title}» completado")
+            viewModel.onCompletionShown()
         }
     }
 
