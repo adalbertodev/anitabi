@@ -3,7 +3,7 @@ package dev.adalbertodev.anitabi.ui.lists
 import dev.adalbertodev.anitabi.graphql.AnimeListsQuery
 import dev.adalbertodev.anitabi.graphql.type.MediaListStatus
 
-fun AnimeListsQuery.Entry.toUiModel() : AnimeListEntry? {
+fun AnimeListsQuery.Entry.toUiModel(): AnimeListEntry? {
     val media = this.media ?: return null
 
     return AnimeListEntry(
@@ -26,4 +26,13 @@ fun MediaListStatus.toEntryStatus(): EntryStatus? = when (this) {
     MediaListStatus.DROPPED -> EntryStatus.DROPPED
     MediaListStatus.PLANNING -> EntryStatus.PLANNING
     else -> null
+}
+
+fun EntryStatus.toMediaListStatus(): MediaListStatus = when (this) {
+    EntryStatus.WATCHING -> MediaListStatus.CURRENT
+    EntryStatus.REPEATING -> MediaListStatus.REPEATING
+    EntryStatus.COMPLETED -> MediaListStatus.COMPLETED
+    EntryStatus.PAUSED -> MediaListStatus.PAUSED
+    EntryStatus.DROPPED -> MediaListStatus.DROPPED
+    EntryStatus.PLANNING -> MediaListStatus.PLANNING
 }

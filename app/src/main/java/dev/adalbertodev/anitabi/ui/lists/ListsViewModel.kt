@@ -86,7 +86,7 @@ class ListsViewModel : ViewModel() {
     fun incrementProgress(entryId: Int) {
         val current = allEntries.firstOrNull { it.entryId == entryId } ?: return
 
-        if(burstSnapshots[entryId] == null) {
+        if (burstSnapshots[entryId] == null) {
             burstSnapshots[entryId] = current
         }
 
@@ -108,7 +108,7 @@ class ListsViewModel : ViewModel() {
 
     private suspend fun sendProgress(entryId: Int) {
         val snapshot = burstSnapshots.remove(entryId) ?: return
-        val target = allEntries.firstOrNull {it.entryId == entryId} ?: return
+        val target = allEntries.firstOrNull { it.entryId == entryId } ?: return
 
         val response = ApolloProvider.client
             .mutation(
@@ -132,7 +132,7 @@ class ListsViewModel : ViewModel() {
                 )
             )
 
-            if(newStatus == EntryStatus.COMPLETED && snapshot.status != EntryStatus.COMPLETED) {
+            if (newStatus == EntryStatus.COMPLETED && snapshot.status != EntryStatus.COMPLETED) {
                 completionSnapshots[entryId] = snapshot
                 _completionEvent.value = CompletionEvent(entryId, target.title)
             }
@@ -143,6 +143,39 @@ class ListsViewModel : ViewModel() {
 
         debounceJobs.remove(entryId)
         applyFilter()
+    }
+
+    fun undoCompletion(entryId: Int) {
+        val snapshot = completionSnapshots.remove(entryId) ?: return
+        val completed = allEntries.firstOrNull { it.entryId == entryId } ?: return
+
+        replaceEntry(snapshot.copy(updatedAt = nowEpochSeconds()))
+        applyFilter()
+
+        viewModelScope.launch {
+            val response = ApolloProvider.client
+                .mutation(SaveProgressMutation(
+                    entryId = Optional.present(entryId),
+                    progress = Optional.present(snapshot.progress),
+                    status = Optional.present(snapshot.status.toMediaListStatus())
+                ))
+                .execute()
+
+            val saved = response.data?.SaveMediaListEntry
+
+            if(saved != null) {
+                replaceEntry(snapshot.copy(
+                    progress = saved.progress ?: snapshot.progress,
+                    updatedAt = saved.updatedAt ?: nowEpochSeconds(),
+                    status = saved.status?.toEntryStatus() ?: snapshot.status
+                ))
+            } else {
+                replaceEntry(completed)
+                _errorMessage.value = "No se pudo deshacer."
+            }
+
+            applyFilter()
+        }
     }
 
     private fun nowEpochSeconds() = (System.currentTimeMillis() / 1000).toInt()
@@ -158,6 +191,10 @@ class ListsViewModel : ViewModel() {
                 .sortedByDescending { it.updatedAt },
             activeFilter = activeFilter
         )
+    }
+
+    fun onCompletionDismissed(entryId: Int) {
+        completionSnapshots.remove(entryId)
     }
 
     private fun AnimeListEntry.matches(filter: ListFilter) = when (filter) {
