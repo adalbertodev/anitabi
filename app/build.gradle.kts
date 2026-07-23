@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
@@ -57,6 +58,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.datastore)
+    implementation(libs.navigation.compose)
 }
 
 apollo {

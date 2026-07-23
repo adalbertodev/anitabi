@@ -25,8 +25,9 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 
 @Composable
-fun AnimeListCard(entry: AnimeListEntry, onIncrement: (Int) -> Unit) {
+fun AnimeListCard(entry: AnimeListEntry, onIncrement: (Int) -> Unit, onClick: (Int) -> Unit) {
     Card(
+        onClick = { onClick(entry.mediaId) },
         modifier = Modifier
             .fillMaxSize()
             .padding(vertical = 4.dp)

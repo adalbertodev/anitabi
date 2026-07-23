@@ -1,0 +1,16 @@
+query MediaDetail($mediaId: Int!) {
+    Media(id: $mediaId) {
+        id
+        title { userPreferred }
+        coverImage { extraLarge }
+        description(asHtml: false)
+        episodes
+        mediaListEntry {
+            id
+            status
+            progress
+            score
+            notes
+        }
+    }
+}

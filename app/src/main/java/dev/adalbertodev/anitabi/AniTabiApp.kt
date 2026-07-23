@@ -2,8 +2,6 @@ package dev.adalbertodev.anitabi
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -11,16 +9,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import dev.adalbertodev.anitabi.data.SessionStore
-import dev.adalbertodev.anitabi.ui.lists.AnimeListCard
-import dev.adalbertodev.anitabi.ui.lists.ListUiState
+import dev.adalbertodev.anitabi.ui.detail.DetailScreen
 import dev.adalbertodev.anitabi.ui.lists.ListsScreen
-import dev.adalbertodev.anitabi.ui.lists.ListsViewModel
-import dev.adalbertodev.anitabi.ui.lists.ViewerUiState
-import dev.adalbertodev.anitabi.ui.lists.ViewerViewModel
 import dev.adalbertodev.anitabi.ui.login.LoginScreen
-import dev.adalbertodev.anitabi.ui.search.SearchViewModel
 import kotlinx.coroutines.flow.map
 
 sealed interface Session {
@@ -36,10 +33,29 @@ fun AniTabiApp(sessionStore: SessionStore) {
             .map { if (it === null) Session.LoggedOut else Session.LoggedIn(it) }
     }.collectAsState(initial = Session.Loading)
 
-    when(session) {
+    when (session) {
         Session.Loading -> Box(Modifier.fillMaxSize())
         Session.LoggedOut -> LoginScreen()
-        is Session.LoggedIn -> ListsScreen()
+        is Session.LoggedIn -> AppNavHost()
     }
 }
 
+@Composable
+fun AppNavHost() {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "lists") {
+        composable("lists") {
+            ListsScreen(
+                onEntryClick = { mediaId -> navController.navigate("detail/$mediaId") }
+            )
+        }
+
+        composable(
+            route = "detail/{mediaId}",
+            arguments = listOf(navArgument("mediaId") { type = NavType.IntType })
+        ) {
+            DetailScreen()
+        }
+    }
+}

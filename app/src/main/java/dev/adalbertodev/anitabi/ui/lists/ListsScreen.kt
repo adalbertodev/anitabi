@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun ListsScreen(viewModel: ListsViewModel = viewModel()) {
+fun ListsScreen(viewModel: ListsViewModel = viewModel(), onEntryClick: (Int) -> Unit) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -66,7 +66,7 @@ fun ListsScreen(viewModel: ListsViewModel = viewModel()) {
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState)},
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             val s = state
 
@@ -107,7 +107,7 @@ fun ListsScreen(viewModel: ListsViewModel = viewModel()) {
                     } else {
                         LazyColumn {
                             items(s.entries, key = { it.entryId }) { entry ->
-                                AnimeListCard(entry, onIncrement = viewModel::incrementProgress)
+                                AnimeListCard(entry, onIncrement = viewModel::incrementProgress, onClick = onEntryClick)
                             }
                         }
                     }
