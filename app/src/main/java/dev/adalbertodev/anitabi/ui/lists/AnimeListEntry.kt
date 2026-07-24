@@ -1,5 +1,7 @@
 package dev.adalbertodev.anitabi.ui.lists
 
+import dev.adalbertodev.anitabi.data.EntryStatus
+
 data class AnimeListEntry(
     val entryId: Int,
     val mediaId: Int,
@@ -10,5 +12,3 @@ data class AnimeListEntry(
     val status: EntryStatus,
     val updatedAt: Int
 )
-
-enum class EntryStatus { WATCHING, REPEATING, COMPLETED, PAUSED, DROPPED, PLANNING }

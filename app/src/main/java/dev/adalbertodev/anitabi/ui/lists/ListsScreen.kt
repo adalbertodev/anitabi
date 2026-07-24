@@ -83,10 +83,6 @@ fun ListsScreen(viewModel: ListsViewModel = viewModel(), onEntryClick: (Int) -> 
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            Log.d(
-                "Padding",
-                padding.calculateLeftPadding(LocalLayoutDirection.current).value.toString()
-            )
             when (val s = state) {
                 ListUiState.Loading -> CircularProgressIndicator(
                     Modifier.align(Alignment.Center)

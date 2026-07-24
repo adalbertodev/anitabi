@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apollographql.apollo.api.Optional
 import dev.adalbertodev.anitabi.data.ApolloProvider
+import dev.adalbertodev.anitabi.data.EntryStatus
+import dev.adalbertodev.anitabi.data.EntryUpdates
 import dev.adalbertodev.anitabi.graphql.AnimeListsQuery
-import dev.adalbertodev.anitabi.graphql.SaveProgressMutation
+import dev.adalbertodev.anitabi.graphql.SaveEntryMutation
 import dev.adalbertodev.anitabi.graphql.ViewerQuery
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -45,6 +47,22 @@ class ListsViewModel : ViewModel() {
 
 
     init {
+        viewModelScope.launch {
+            EntryUpdates.updates.collect { update ->
+                allEntries = allEntries.map {
+                    if (it.entryId == update.entryId)
+                        it.copy(
+                            status = update.status,
+                            progress = update.progress,
+                            updatedAt = update.updatedAt
+                        )
+                    else it
+                }
+
+                applyFilter()
+            }
+        }
+
         viewModelScope.launch {
             val viewerId = ApolloProvider.client.query(ViewerQuery()).execute().data?.Viewer?.id
 
@@ -112,7 +130,7 @@ class ListsViewModel : ViewModel() {
 
         val response = ApolloProvider.client
             .mutation(
-                SaveProgressMutation(
+                SaveEntryMutation(
                     entryId = Optional.present(entryId),
                     progress = Optional.present(target.progress)
                 )
@@ -154,7 +172,7 @@ class ListsViewModel : ViewModel() {
 
         viewModelScope.launch {
             val response = ApolloProvider.client
-                .mutation(SaveProgressMutation(
+                .mutation(SaveEntryMutation(
                     entryId = Optional.present(entryId),
                     progress = Optional.present(snapshot.progress),
                     status = Optional.present(snapshot.status.toMediaListStatus())

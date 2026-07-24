@@ -1,7 +1,7 @@
 package dev.adalbertodev.anitabi.ui.detail
 
 import dev.adalbertodev.anitabi.graphql.MediaDetailQuery
-import dev.adalbertodev.anitabi.ui.lists.EntryStatus
+import dev.adalbertodev.anitabi.data.EntryStatus
 import dev.adalbertodev.anitabi.ui.lists.toEntryStatus
 
 fun MediaDetailQuery.Media.toUiModel(): MediaDetail {

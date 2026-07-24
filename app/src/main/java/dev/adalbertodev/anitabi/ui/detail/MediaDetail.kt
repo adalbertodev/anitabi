@@ -1,6 +1,6 @@
 package dev.adalbertodev.anitabi.ui.detail
 
-import dev.adalbertodev.anitabi.ui.lists.EntryStatus
+import dev.adalbertodev.anitabi.data.EntryStatus
 
 data class MediaDetail(
     val mediaId: Int,

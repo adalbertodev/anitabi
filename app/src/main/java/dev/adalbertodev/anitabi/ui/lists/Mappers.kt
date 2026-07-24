@@ -1,5 +1,6 @@
 package dev.adalbertodev.anitabi.ui.lists
 
+import dev.adalbertodev.anitabi.data.EntryStatus
 import dev.adalbertodev.anitabi.graphql.AnimeListsQuery
 import dev.adalbertodev.anitabi.graphql.type.MediaListStatus
 
