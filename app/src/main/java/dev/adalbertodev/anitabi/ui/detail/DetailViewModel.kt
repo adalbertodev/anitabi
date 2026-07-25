@@ -53,15 +53,17 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
             _isSaving.value = true
 
             val response = ApolloProvider.client
-                .mutation(SaveEntryMutation(
-                    entryId = Optional.present(entry.entryId),
-                    status = Optional.present(newStatus.toMediaListStatus())
-                ))
+                .mutation(
+                    SaveEntryMutation(
+                        entryId = Optional.present(entry.entryId),
+                        status = Optional.present(newStatus.toMediaListStatus())
+                    )
+                )
                 .execute()
 
             val saved = response.data?.SaveMediaListEntry
 
-            if(saved != null) {
+            if (saved != null) {
                 val updated = entry.copy(
                     status = saved.status?.toEntryStatus() ?: newStatus,
                     progress = saved.progress ?: entry.progress
@@ -69,14 +71,60 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
                 _uiState.value = DetailUiState.Success(current.copy(entry = updated))
 
-                EntryUpdates.publish(EntryUpdate(
-                    entryId = entry.entryId,
-                    status = updated.status,
-                    progress = updated.progress,
-                    updatedAt = saved.updatedAt ?: nowEpochSeconds()
-                ))
+                EntryUpdates.publish(
+                    EntryUpdate(
+                        entryId = entry.entryId,
+                        status = updated.status,
+                        progress = updated.progress,
+                        updatedAt = saved.updatedAt ?: nowEpochSeconds()
+                    )
+                )
             } else {
                 _errorMessage.value = "No se pudo cambiar el estado."
+            }
+
+            _isSaving.value = false
+        }
+    }
+
+    fun setProgress(newProgress: Int) {
+        val current = (_uiState.value as? DetailUiState.Success)?.detail ?: return
+        val entry = current.entry ?: return
+
+        if (entry.progress == newProgress || _isSaving.value) return
+
+        viewModelScope.launch {
+            _isSaving.value = true
+
+            val response = ApolloProvider.client
+                .mutation(
+                    SaveEntryMutation(
+                        entryId = Optional.present(entry.entryId),
+                        progress = Optional.present(newProgress)
+                    )
+                )
+                .execute()
+
+            val saved = response.data?.SaveMediaListEntry
+
+            if (saved != null) {
+                val updated = entry.copy(
+                    progress = saved.progress ?: newProgress,
+                    status = saved.status?.toEntryStatus() ?: entry.status
+                )
+
+                _uiState.value = DetailUiState.Success(current.copy(entry = updated))
+
+                EntryUpdates.publish(
+                    EntryUpdate(
+                        entryId = entry.entryId,
+                        status = updated.status,
+                        progress = updated.progress,
+                        updatedAt = saved.updatedAt ?: nowEpochSeconds()
+                    )
+                )
+            } else {
+                _errorMessage.value = "No se pudo guardar el progreso."
             }
 
             _isSaving.value = false

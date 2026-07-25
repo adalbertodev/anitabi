@@ -76,14 +76,14 @@ fun DetailScreen(viewModel: DetailViewModel = viewModel()) {
                     Text("No se pudo cargar el anime.")
                 }
 
-                is DetailUiState.Success -> DetailContent(s.detail, isSaving, viewModel::setStatus)
+                is DetailUiState.Success -> DetailContent(s.detail, isSaving, viewModel)
             }
         }
     }
 }
 
 @Composable
-fun DetailContent(detail: MediaDetail, isSaving: Boolean, onStatusSelected: (EntryStatus) -> Unit) {
+fun DetailContent(detail: MediaDetail, isSaving: Boolean, viewModel: DetailViewModel) {
     Column(
         Modifier
             .fillMaxSize()
@@ -110,9 +110,14 @@ fun DetailContent(detail: MediaDetail, isSaving: Boolean, onStatusSelected: (Ent
             StatusSelector(
                 current = entry.status,
                 enabled = !isSaving,
-                onStatusSelected = onStatusSelected
+                onStatusSelected = viewModel::setStatus
             )
-            Text("Progreso: ${entry.progress} / ${detail.totalEpisodes ?: "?"}")
+            ProgressEditor(
+                progress = entry.progress,
+                totalEpisodes = detail.totalEpisodes,
+                enabled = !isSaving,
+                onProgressConfirmed = viewModel::setProgress
+            )
             Text("Puntuación: ${entry.score}")
 
             Spacer(Modifier.height(16.dp))
