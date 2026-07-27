@@ -30,13 +30,13 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
     init {
         viewModelScope.launch {
-            val media = ApolloProvider.client
+            val data = ApolloProvider.client
                 .query(MediaDetailQuery(mediaId = mediaId))
                 .execute()
-                .data?.Media
+                .data
 
-            _uiState.value = if (media != null) {
-                DetailUiState.Success(media.toUiModel())
+            _uiState.value = if (data?.Media != null) {
+                DetailUiState.Success(data.toUiModel())
             } else {
                 DetailUiState.Error
             }
@@ -125,6 +125,41 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
                 )
             } else {
                 _errorMessage.value = "No se pudo guardar el progreso."
+            }
+
+            _isSaving.value = false
+        }
+    }
+
+    fun setScore(newScore: Double) {
+        val current = (_uiState.value as? DetailUiState.Success)?.detail ?: return
+        val entry = current.entry ?: return
+
+        if (entry.score == newScore || _isSaving.value) return
+
+        viewModelScope.launch {
+            _isSaving.value = true
+
+            val response = ApolloProvider.client
+                .mutation(
+                    SaveEntryMutation(
+                        entryId = Optional.present(entry.entryId),
+                        score = Optional.present(newScore)
+                    )
+                )
+                .execute()
+
+            val saved = response.data?.SaveMediaListEntry
+
+            if (saved != null) {
+                val updated = entry.copy(
+                    score = saved.score ?: newScore,
+                    status = saved.status?.toEntryStatus() ?: entry.status
+                )
+
+                _uiState.value = DetailUiState.Success(current.copy(entry = updated))
+            } else {
+                _errorMessage.value = "No se pudo guardar la nota."
             }
 
             _isSaving.value = false

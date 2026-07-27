@@ -118,7 +118,12 @@ fun DetailContent(detail: MediaDetail, isSaving: Boolean, viewModel: DetailViewM
                 enabled = !isSaving,
                 onProgressConfirmed = viewModel::setProgress
             )
-            Text("Puntuación: ${entry.score}")
+            ScoreEditor(
+                format = detail.scoreFormat,
+                score = entry.score ?: 0.0,
+                enabled = !isSaving,
+                onScoreConfirmed = viewModel::setScore
+            )
 
             Spacer(Modifier.height(16.dp))
         }

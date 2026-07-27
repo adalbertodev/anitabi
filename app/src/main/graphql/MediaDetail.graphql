@@ -13,4 +13,9 @@ query MediaDetail($mediaId: Int!) {
             notes
         }
     }
+    Viewer {
+        mediaListOptions {
+            scoreFormat
+        }
+    }
 }

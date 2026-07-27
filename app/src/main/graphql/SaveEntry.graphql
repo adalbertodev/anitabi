@@ -1,8 +1,9 @@
-mutation SaveEntry($entryId: Int, $progress: Int, $status: MediaListStatus) {
-    SaveMediaListEntry(id: $entryId, progress: $progress, status: $status) {
+mutation SaveEntry($entryId: Int, $progress: Int, $status: MediaListStatus, $score: Float) {
+    SaveMediaListEntry(id: $entryId, progress: $progress, status: $status, score: $score) {
         id
         progress
         status
+        score
         updatedAt
     }
 }

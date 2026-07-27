@@ -8,7 +8,8 @@ data class MediaDetail(
     val coverUrl: String?,
     val synopsis: String,
     val totalEpisodes: Int?,
-    val entry: MyListEntry?
+    val entry: MyListEntry?,
+    val scoreFormat: ScoreUiFormat
 )
 
 data class MyListEntry(
