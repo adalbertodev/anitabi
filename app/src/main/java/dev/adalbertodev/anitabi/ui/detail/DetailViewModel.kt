@@ -153,13 +153,46 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
             if (saved != null) {
                 val updated = entry.copy(
-                    score = saved.score ?: newScore,
-                    status = saved.status?.toEntryStatus() ?: entry.status
+                    score = saved.score ?: newScore
                 )
 
                 _uiState.value = DetailUiState.Success(current.copy(entry = updated))
             } else {
                 _errorMessage.value = "No se pudo guardar la nota."
+            }
+
+            _isSaving.value = false
+        }
+    }
+
+    fun setNotes(newNotes: String) {
+        val current = (_uiState.value as? DetailUiState.Success)?.detail ?: return
+        val entry = current.entry ?: return
+
+        if (entry.notes.orEmpty() == newNotes || _isSaving.value) return
+
+        viewModelScope.launch {
+            _isSaving.value = true
+
+            val response = ApolloProvider.client
+                .mutation(
+                    SaveEntryMutation(
+                        entryId = Optional.present(entry.entryId),
+                        notes = Optional.present(newNotes)
+                    )
+                )
+                .execute()
+
+            val saved = response.data?.SaveMediaListEntry
+
+            if (saved != null) {
+                val updated = entry.copy(
+                    notes = saved.notes ?: newNotes
+                )
+
+                _uiState.value = DetailUiState.Success(current.copy(entry = updated))
+            } else {
+                _errorMessage.value = "No se pudo guardar las notas."
             }
 
             _isSaving.value = false

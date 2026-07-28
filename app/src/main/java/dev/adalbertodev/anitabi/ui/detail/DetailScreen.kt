@@ -124,6 +124,11 @@ fun DetailContent(detail: MediaDetail, isSaving: Boolean, viewModel: DetailViewM
                 enabled = !isSaving,
                 onScoreConfirmed = viewModel::setScore
             )
+            NotesEditor(
+                notes = entry.notes,
+                enabled = !isSaving,
+                onNotesConfirmed = viewModel::setNotes
+            )
 
             Spacer(Modifier.height(16.dp))
         }
