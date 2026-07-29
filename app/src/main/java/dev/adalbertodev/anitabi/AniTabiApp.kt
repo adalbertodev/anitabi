@@ -2,12 +2,10 @@ package dev.adalbertodev.anitabi
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -18,6 +16,7 @@ import dev.adalbertodev.anitabi.data.SessionStore
 import dev.adalbertodev.anitabi.ui.detail.DetailScreen
 import dev.adalbertodev.anitabi.ui.lists.ListsScreen
 import dev.adalbertodev.anitabi.ui.login.LoginScreen
+import dev.adalbertodev.anitabi.ui.search.SearchScreen
 import kotlinx.coroutines.flow.map
 
 sealed interface Session {
@@ -47,7 +46,8 @@ fun AppNavHost() {
     NavHost(navController = navController, startDestination = "lists") {
         composable("lists") {
             ListsScreen(
-                onEntryClick = { mediaId -> navController.navigate("detail/$mediaId") }
+                onEntryClick = { mediaId -> navController.navigate("detail/$mediaId") },
+                onSearchClick = { navController.navigate("search") }
             )
         }
 
@@ -56,6 +56,12 @@ fun AppNavHost() {
             arguments = listOf(navArgument("mediaId") { type = NavType.IntType })
         ) {
             DetailScreen()
+        }
+
+        composable("search") {
+            SearchScreen(
+                onResultClick = { mediaId -> navController.navigate("detail/$mediaId") }
+            )
         }
     }
 }
