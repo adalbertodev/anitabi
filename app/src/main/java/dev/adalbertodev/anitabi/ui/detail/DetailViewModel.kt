@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apollographql.apollo.api.Optional
 import dev.adalbertodev.anitabi.data.ApolloProvider
+import dev.adalbertodev.anitabi.data.EntryEvent
+import dev.adalbertodev.anitabi.data.EntryEvents
 import dev.adalbertodev.anitabi.data.EntryStatus
-import dev.adalbertodev.anitabi.data.EntryUpdate
-import dev.adalbertodev.anitabi.data.EntryUpdates
 import dev.adalbertodev.anitabi.graphql.MediaDetailQuery
 import dev.adalbertodev.anitabi.graphql.SaveEntryMutation
 import dev.adalbertodev.anitabi.ui.lists.toEntryStatus
@@ -71,8 +71,8 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
                 _uiState.value = DetailUiState.Success(current.copy(entry = updated))
 
-                EntryUpdates.publish(
-                    EntryUpdate(
+                EntryEvents.publish(
+                    EntryEvent.Updated(
                         entryId = entry.entryId,
                         status = updated.status,
                         progress = updated.progress,
@@ -115,8 +115,8 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
                 _uiState.value = DetailUiState.Success(current.copy(entry = updated))
 
-                EntryUpdates.publish(
-                    EntryUpdate(
+                EntryEvents.publish(
+                    EntryEvent.Updated(
                         entryId = entry.entryId,
                         status = updated.status,
                         progress = updated.progress,

@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apollographql.apollo.api.Optional
 import dev.adalbertodev.anitabi.data.ApolloProvider
+import dev.adalbertodev.anitabi.data.EntryEvent
 import dev.adalbertodev.anitabi.data.EntryStatus
-import dev.adalbertodev.anitabi.data.EntryUpdates
+import dev.adalbertodev.anitabi.data.EntryEvents
 import dev.adalbertodev.anitabi.graphql.AnimeListsQuery
 import dev.adalbertodev.anitabi.graphql.SaveEntryMutation
 import dev.adalbertodev.anitabi.graphql.ViewerQuery
@@ -48,15 +49,23 @@ class ListsViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            EntryUpdates.updates.collect { update ->
-                allEntries = allEntries.map {
-                    if (it.entryId == update.entryId)
-                        it.copy(
-                            status = update.status,
-                            progress = update.progress,
-                            updatedAt = update.updatedAt
-                        )
-                    else it
+            EntryEvents.events.collect { event ->
+                when (event) {
+                    is EntryEvent.Updated -> allEntries = allEntries.map {
+                        if (it.entryId == event.entryId)
+                            it.copy(
+                                status = event.status,
+                                progress = event.progress,
+                                updatedAt = event.updatedAt
+                            )
+                        else it
+                    }
+
+                    is EntryEvent.Created -> {
+                        if(allEntries.none {it.entryId == event.entry.entryId}) {
+                            allEntries = allEntries + event.entry
+                        }
+                    }
                 }
 
                 applyFilter()
