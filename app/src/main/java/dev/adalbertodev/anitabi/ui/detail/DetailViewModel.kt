@@ -43,6 +43,40 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
         }
     }
 
+    fun addToList(status: EntryStatus) {
+        val current = (_uiState.value as? DetailUiState.Success)?.detail ?: return
+        if(current.entry != null || _isSaving.value) return
+
+        viewModelScope.launch {
+            _isSaving.value = true
+
+            val response = ApolloProvider.client
+                .mutation(SaveEntryMutation(
+                    mediaId = Optional.present(current.mediaId),
+                    status = Optional.present(status.toMediaListStatus())
+                ))
+                .execute()
+
+            val saved = response.data?.SaveMediaListEntry
+
+            if(saved != null) {
+                val newEntry = MyListEntry(
+                    entryId = saved.id,
+                    status = saved.status?.toEntryStatus() ?: status,
+                    progress = saved.progress ?: 0,
+                    score = saved.score ?: 0.0,
+                    notes = saved.notes
+                )
+
+                _uiState.value = DetailUiState.Success(current.copy(entry = newEntry))
+            } else {
+                _errorMessage.value = "No se pudo añadir a tu lista."
+            }
+
+            _isSaving.value = false
+        }
+    }
+
     fun setStatus(newStatus: EntryStatus) {
         val current = (_uiState.value as? DetailUiState.Success)?.detail ?: return
         val entry = current.entry ?: return

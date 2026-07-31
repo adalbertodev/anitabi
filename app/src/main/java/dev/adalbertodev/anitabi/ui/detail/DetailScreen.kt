@@ -54,7 +54,14 @@ fun DetailScreen(viewModel: DetailViewModel = viewModel()) {
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            val s = state
+
+            if (s is DetailUiState.Success && s.detail.entry == null) {
+                AddFab(enabled = !isSaving, onStatusSelected = viewModel::addToList)
+            }
+        }
     ) { padding ->
         Box(
             modifier = Modifier
