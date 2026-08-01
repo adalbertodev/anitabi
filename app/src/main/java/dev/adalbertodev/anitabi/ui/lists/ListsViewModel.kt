@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.apollographql.apollo.api.Optional
 import dev.adalbertodev.anitabi.data.ApolloProvider
 import dev.adalbertodev.anitabi.data.EntryEvent
-import dev.adalbertodev.anitabi.data.EntryStatus
 import dev.adalbertodev.anitabi.data.EntryEvents
+import dev.adalbertodev.anitabi.data.EntryStatus
 import dev.adalbertodev.anitabi.graphql.AnimeListsQuery
 import dev.adalbertodev.anitabi.graphql.SaveEntryMutation
 import dev.adalbertodev.anitabi.graphql.ViewerQuery
@@ -46,6 +46,9 @@ class ListsViewModel : ViewModel() {
     private val _completionEvent = MutableStateFlow<CompletionEvent?>(null)
     val completionEvent: StateFlow<CompletionEvent?> = _completionEvent
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
 
     init {
         viewModelScope.launch {
@@ -62,7 +65,7 @@ class ListsViewModel : ViewModel() {
                     }
 
                     is EntryEvent.Created -> {
-                        if(allEntries.none {it.entryId == event.entry.entryId}) {
+                        if (allEntries.none { it.entryId == event.entry.entryId }) {
                             allEntries = allEntries + event.entry
                         }
                     }
@@ -73,26 +76,49 @@ class ListsViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            val viewerId = ApolloProvider.client.query(ViewerQuery()).execute().data?.Viewer?.id
+            _uiState.value = ListUiState.Loading
+            loadEntries()
+        }
+    }
 
-            if (viewerId == null) {
-                _uiState.value = ListUiState.Error
-                return@launch
+    fun refresh() {
+        if (_isRefreshing.value) return
+
+        viewModelScope.launch {
+            _isRefreshing.value = true
+
+            debounceJobs.keys.toList().forEach { entryId ->
+                debounceJobs[entryId]?.cancel()
+                sendProgress(entryId)
             }
 
-            val response = ApolloProvider.client.query(AnimeListsQuery(userId = viewerId)).execute()
+            loadEntries()
+            _isRefreshing.value = false
+        }
+    }
 
-            val lists = response.data?.MediaListCollection?.lists
+    private suspend fun loadEntries() {
+        val viewerId = ApolloProvider.client.query(ViewerQuery()).execute().data?.Viewer?.id
 
-            if (lists != null) {
-                allEntries = lists.asSequence()
-                    .filter { it?.isCustomList != true }
-                    .flatMap { it?.entries.orEmpty().asSequence() }
-                    .mapNotNull { it?.toUiModel() }
-                    .distinctBy { it.entryId }
-                    .toList()
+        val lists = viewerId?.let {
+            ApolloProvider.client.query(AnimeListsQuery(userId = it))
+                .execute().data?.MediaListCollection?.lists
+        }
 
-                applyFilter()
+        if (lists != null) {
+            allEntries = lists.asSequence()
+                .filter { it?.isCustomList != true }
+                .flatMap { it?.entries.orEmpty().asSequence() }
+                .mapNotNull { it?.toUiModel() }
+                .distinctBy { it.entryId }
+                .toList()
+
+            applyFilter()
+        } else {
+            if (allEntries.isEmpty()) {
+                _uiState.value = ListUiState.Error
+            } else {
+                _errorMessage.value = "No se pudo actualizar."
             }
         }
     }
@@ -181,21 +207,25 @@ class ListsViewModel : ViewModel() {
 
         viewModelScope.launch {
             val response = ApolloProvider.client
-                .mutation(SaveEntryMutation(
-                    entryId = Optional.present(entryId),
-                    progress = Optional.present(snapshot.progress),
-                    status = Optional.present(snapshot.status.toMediaListStatus())
-                ))
+                .mutation(
+                    SaveEntryMutation(
+                        entryId = Optional.present(entryId),
+                        progress = Optional.present(snapshot.progress),
+                        status = Optional.present(snapshot.status.toMediaListStatus())
+                    )
+                )
                 .execute()
 
             val saved = response.data?.SaveMediaListEntry
 
-            if(saved != null) {
-                replaceEntry(snapshot.copy(
-                    progress = saved.progress ?: snapshot.progress,
-                    updatedAt = saved.updatedAt ?: nowEpochSeconds(),
-                    status = saved.status?.toEntryStatus() ?: snapshot.status
-                ))
+            if (saved != null) {
+                replaceEntry(
+                    snapshot.copy(
+                        progress = saved.progress ?: snapshot.progress,
+                        updatedAt = saved.updatedAt ?: nowEpochSeconds(),
+                        status = saved.status?.toEntryStatus() ?: snapshot.status
+                    )
+                )
             } else {
                 replaceEntry(completed)
                 _errorMessage.value = "No se pudo deshacer."

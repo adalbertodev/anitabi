@@ -10,6 +10,7 @@ import dev.adalbertodev.anitabi.data.EntryEvents
 import dev.adalbertodev.anitabi.data.EntryStatus
 import dev.adalbertodev.anitabi.graphql.MediaDetailQuery
 import dev.adalbertodev.anitabi.graphql.SaveEntryMutation
+import dev.adalbertodev.anitabi.ui.lists.AnimeListEntry
 import dev.adalbertodev.anitabi.ui.lists.toEntryStatus
 import dev.adalbertodev.anitabi.ui.lists.toMediaListStatus
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,21 +46,23 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
     fun addToList(status: EntryStatus) {
         val current = (_uiState.value as? DetailUiState.Success)?.detail ?: return
-        if(current.entry != null || _isSaving.value) return
+        if (current.entry != null || _isSaving.value) return
 
         viewModelScope.launch {
             _isSaving.value = true
 
             val response = ApolloProvider.client
-                .mutation(SaveEntryMutation(
-                    mediaId = Optional.present(current.mediaId),
-                    status = Optional.present(status.toMediaListStatus())
-                ))
+                .mutation(
+                    SaveEntryMutation(
+                        mediaId = Optional.present(current.mediaId),
+                        status = Optional.present(status.toMediaListStatus())
+                    )
+                )
                 .execute()
 
             val saved = response.data?.SaveMediaListEntry
 
-            if(saved != null) {
+            if (saved != null) {
                 val newEntry = MyListEntry(
                     entryId = saved.id,
                     status = saved.status?.toEntryStatus() ?: status,
@@ -69,6 +72,21 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
                 )
 
                 _uiState.value = DetailUiState.Success(current.copy(entry = newEntry))
+
+                EntryEvents.publish(
+                    EntryEvent.Created(
+                        AnimeListEntry(
+                            entryId = saved.id,
+                            mediaId = current.mediaId,
+                            title = current.title,
+                            coverUrl = current.coverUrl,
+                            progress = newEntry.progress,
+                            totalEpisodes = current.totalEpisodes,
+                            status = newEntry.status,
+                            updatedAt = saved.updatedAt ?: nowEpochSeconds()
+                        )
+                    )
+                )
             } else {
                 _errorMessage.value = "No se pudo añadir a tu lista."
             }

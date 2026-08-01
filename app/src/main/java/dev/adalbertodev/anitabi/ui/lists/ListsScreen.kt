@@ -1,10 +1,14 @@
 package dev.adalbertodev.anitabi.ui.lists
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Search
@@ -15,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -23,6 +26,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,8 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +49,7 @@ fun ListsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage by viewModel.errorMessage.collectAsState()
     val completionEvent by viewModel.completionEvent.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
@@ -107,18 +110,24 @@ fun ListsScreen(
 
                 ListUiState.Error -> Text("No se pudieron cargar tus listas")
 
-                is ListUiState.Success -> {
+                is ListUiState.Success -> PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = viewModel::refresh
+                ) {
                     if (s.entries.isEmpty()) {
-                        Text(
-                            text = s.activeFilter.emptyMessage,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(32.dp),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Column(
+                            Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(s.activeFilter.emptyMessage)
+                        }
                     } else {
-                        LazyColumn {
+                        LazyColumn(
+                            Modifier.fillMaxSize()
+                        ) {
                             items(s.entries, key = { it.entryId }) { entry ->
                                 AnimeListCard(
                                     entry,
