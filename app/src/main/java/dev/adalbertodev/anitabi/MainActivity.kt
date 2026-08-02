@@ -1,14 +1,19 @@
 package dev.adalbertodev.anitabi
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import dev.adalbertodev.anitabi.data.ApolloProvider
 import dev.adalbertodev.anitabi.data.SessionStore
+import dev.adalbertodev.anitabi.ui.theme.AniTabiTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -18,11 +23,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         sessionStore = SessionStore(applicationContext)
         ApolloProvider.init(sessionStore)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+        )
         handleAuthRedirect(intent)
 
         setContent {
-            AniTabiApp(sessionStore)
+            AniTabiTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AniTabiApp(sessionStore)
+                }
+            }
         }
     }
 
