@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -108,7 +109,7 @@ fun ListsScreen(
                     Modifier.align(Alignment.Center)
                 )
 
-                ListUiState.Error -> Text("No se pudieron cargar tus listas")
+                ListUiState.Error -> Text("No se pudieron cargar tus listas", color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                 is ListUiState.Success -> PullToRefreshBox(
                     isRefreshing = isRefreshing,
@@ -122,7 +123,7 @@ fun ListsScreen(
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(s.activeFilter.emptyMessage)
+                            Text(s.activeFilter.emptyMessage, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     } else {
                         LazyColumn(

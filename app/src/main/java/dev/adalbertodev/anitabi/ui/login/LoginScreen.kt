@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,20 +23,27 @@ import dev.adalbertodev.anitabi.auth.AuthConfig
 fun LoginScreen() {
     val context = LocalContext.current
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("AniTabi", style = MaterialTheme.typography.headlineLarge)
+    Scaffold { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("AniTabi",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-        Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp))
 
-        Button(onClick = {
-            val customTab = CustomTabsIntent.Builder().build()
-            customTab.launchUrl(context, AuthConfig.AUTH_URL.toUri())
-        }) {
-            Text("Entrar con AniList")
+            Button(onClick = {
+                val customTab = CustomTabsIntent.Builder().build()
+                customTab.launchUrl(context, AuthConfig.AUTH_URL.toUri())
+            }) {
+                Text("Entrar con AniList")
+            }
         }
     }
 }

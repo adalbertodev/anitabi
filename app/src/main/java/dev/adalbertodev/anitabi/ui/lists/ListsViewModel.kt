@@ -245,7 +245,7 @@ class ListsViewModel : ViewModel() {
         _uiState.value = ListUiState.Success(
             entries = allEntries
                 .filter { it.matches(activeFilter) }
-                .sortedByDescending { it.updatedAt },
+                .sortedByDescending { it.sortKey },
             activeFilter = activeFilter
         )
     }

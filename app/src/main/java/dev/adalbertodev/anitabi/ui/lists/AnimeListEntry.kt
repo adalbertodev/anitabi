@@ -10,5 +10,6 @@ data class AnimeListEntry(
     val progress: Int,
     val totalEpisodes: Int?,
     val status: EntryStatus,
-    val updatedAt: Int
+    val updatedAt: Int,
+    val sortKey: Int
 )

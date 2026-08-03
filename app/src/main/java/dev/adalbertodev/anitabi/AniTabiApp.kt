@@ -60,7 +60,8 @@ fun AppNavHost() {
 
         composable("search") {
             SearchScreen(
-                onResultClick = { mediaId -> navController.navigate("detail/$mediaId") }
+                onResultClick = { mediaId -> navController.navigate("detail/$mediaId") },
+                onBack = { navController.popBackStack() }
             )
         }
     }

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +36,7 @@ fun NotesEditor(
             onValueChange = { text = it },
             modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp),
             label = { Text("Notas") },
-            placeholder = { Text("Sin notas") }
+            placeholder = { Text("Sin notas", color = MaterialTheme.colorScheme.onSurfaceVariant) }
         )
 
         Spacer(Modifier.height(4.dp))

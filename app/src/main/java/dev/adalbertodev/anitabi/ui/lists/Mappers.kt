@@ -15,7 +15,8 @@ fun AnimeListsQuery.Entry.toUiModel(): AnimeListEntry? {
         progress = progress ?: 0,
         totalEpisodes = media.episodes,
         status = status?.toEntryStatus() ?: EntryStatus.WATCHING,
-        updatedAt = updatedAt ?: 0
+        updatedAt = updatedAt ?: 0,
+        sortKey = updatedAt ?: 0
     )
 }
 

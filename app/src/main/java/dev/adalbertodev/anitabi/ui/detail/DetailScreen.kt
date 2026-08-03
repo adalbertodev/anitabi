@@ -80,7 +80,7 @@ fun DetailScreen(viewModel: DetailViewModel = viewModel()) {
                     Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No se pudo cargar el anime.")
+                    Text("No se pudo cargar el anime.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 is DetailUiState.Success -> DetailContent(s.detail, isSaving, viewModel)

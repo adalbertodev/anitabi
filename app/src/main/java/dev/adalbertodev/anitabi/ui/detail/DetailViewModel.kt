@@ -83,7 +83,8 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
                             progress = newEntry.progress,
                             totalEpisodes = current.totalEpisodes,
                             status = newEntry.status,
-                            updatedAt = saved.updatedAt ?: nowEpochSeconds()
+                            updatedAt = saved.updatedAt ?: nowEpochSeconds(),
+                            sortKey = saved.updatedAt ?: nowEpochSeconds()
                         )
                     )
                 )
