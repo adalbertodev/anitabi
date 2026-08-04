@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import dev.adalbertodev.anitabi.data.EntryStatus
+import dev.adalbertodev.anitabi.ui.common.ErrorState
 
 @Composable
 fun DetailScreen(viewModel: DetailViewModel = viewModel()) {
@@ -76,11 +77,11 @@ fun DetailScreen(viewModel: DetailViewModel = viewModel()) {
                     CircularProgressIndicator()
                 }
 
-                DetailUiState.Error -> Box(
+                is DetailUiState.Error -> Box(
                     Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No se pudo cargar el anime.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    ErrorState(kind = s.kind, onRetry = viewModel::retry)
                 }
 
                 is DetailUiState.Success -> DetailContent(s.detail, isSaving, viewModel)

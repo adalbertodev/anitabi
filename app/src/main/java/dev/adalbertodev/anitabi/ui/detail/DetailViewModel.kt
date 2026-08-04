@@ -8,6 +8,8 @@ import dev.adalbertodev.anitabi.data.ApolloProvider
 import dev.adalbertodev.anitabi.data.EntryEvent
 import dev.adalbertodev.anitabi.data.EntryEvents
 import dev.adalbertodev.anitabi.data.EntryStatus
+import dev.adalbertodev.anitabi.data.ErrorKind
+import dev.adalbertodev.anitabi.data.errorKindOrNull
 import dev.adalbertodev.anitabi.graphql.MediaDetailQuery
 import dev.adalbertodev.anitabi.graphql.SaveEntryMutation
 import dev.adalbertodev.anitabi.ui.lists.AnimeListEntry
@@ -31,16 +33,27 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
     init {
         viewModelScope.launch {
-            val data = ApolloProvider.client
-                .query(MediaDetailQuery(mediaId = mediaId))
-                .execute()
-                .data
+            load()
+        }
+    }
 
-            _uiState.value = if (data?.Media != null) {
-                DetailUiState.Success(data.toUiModel())
-            } else {
-                DetailUiState.Error
-            }
+    fun retry() {
+        viewModelScope.launch {
+            _uiState.value = DetailUiState.Loading
+            load()
+        }
+    }
+
+    private suspend fun load() {
+        val response = ApolloProvider.client
+            .query(MediaDetailQuery(mediaId = mediaId))
+            .execute()
+        val data = response.data
+
+        _uiState.value = if (data?.Media != null) {
+            DetailUiState.Success(data.toUiModel())
+        } else {
+            DetailUiState.Error(response.errorKindOrNull() ?: ErrorKind.SERVER)
         }
     }
 
@@ -89,7 +102,10 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
                     )
                 )
             } else {
-                _errorMessage.value = "No se pudo añadir a tu lista."
+                _errorMessage.value = when (response.errorKindOrNull()) {
+                    ErrorKind.NETWORK -> "Sin conexión. No se pudo añadir a tu lista."
+                    else -> "No se pudo añadir a tu lista."
+                }
             }
 
             _isSaving.value = false
@@ -133,7 +149,10 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
                     )
                 )
             } else {
-                _errorMessage.value = "No se pudo cambiar el estado."
+                _errorMessage.value = when (response.errorKindOrNull()) {
+                    ErrorKind.NETWORK -> "Sin conexión. No se pudo cambiar el estado."
+                    else -> "No se pudo cambiar el estado."
+                }
             }
 
             _isSaving.value = false
@@ -177,7 +196,10 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
                     )
                 )
             } else {
-                _errorMessage.value = "No se pudo guardar el progreso."
+                _errorMessage.value = when (response.errorKindOrNull()) {
+                    ErrorKind.NETWORK -> "Sin conexión. No se pudo guardar el progreso."
+                    else -> "No se pudo guardar el progreso."
+                }
             }
 
             _isSaving.value = false
@@ -211,7 +233,10 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
                 _uiState.value = DetailUiState.Success(current.copy(entry = updated))
             } else {
-                _errorMessage.value = "No se pudo guardar la nota."
+                _errorMessage.value = when (response.errorKindOrNull()) {
+                    ErrorKind.NETWORK -> "Sin conexión. No se pudo guardar la nota."
+                    else -> "No se pudo guardar la nota."
+                }
             }
 
             _isSaving.value = false
@@ -245,7 +270,10 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
                 _uiState.value = DetailUiState.Success(current.copy(entry = updated))
             } else {
-                _errorMessage.value = "No se pudo guardar las notas."
+                _errorMessage.value = when (response.errorKindOrNull()) {
+                    ErrorKind.NETWORK -> "Sin conexión. No se pudo guardar las notas."
+                    else -> "No se pudo guardar las notas."
+                }
             }
 
             _isSaving.value = false

@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.adalbertodev.anitabi.ui.common.ErrorState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,7 +110,7 @@ fun ListsScreen(
                     Modifier.align(Alignment.Center)
                 )
 
-                ListUiState.Error -> Text("No se pudieron cargar tus listas", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                is ListUiState.Error -> ErrorState(kind = s.kind, onRetry = viewModel::retry)
 
                 is ListUiState.Success -> PullToRefreshBox(
                     isRefreshing = isRefreshing,

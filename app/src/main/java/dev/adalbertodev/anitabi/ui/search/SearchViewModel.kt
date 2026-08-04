@@ -4,7 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apollographql.apollo.api.Optional
 import dev.adalbertodev.anitabi.data.ApolloProvider
+import dev.adalbertodev.anitabi.data.ErrorKind
+import dev.adalbertodev.anitabi.data.errorKindOrNull
 import dev.adalbertodev.anitabi.graphql.SearchAnimeQuery
+import dev.adalbertodev.anitabi.ui.lists.ListUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -36,7 +39,7 @@ class SearchViewModel : ViewModel() {
                     }
                 )
             } else {
-                SearchUiState.Error("No se pudo completar la búsqueda")
+                SearchUiState.Error(response.errorKindOrNull() ?: ErrorKind.SERVER)
             }
         }
     }

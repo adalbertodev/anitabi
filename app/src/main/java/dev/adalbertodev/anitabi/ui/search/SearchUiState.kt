@@ -1,5 +1,7 @@
 package dev.adalbertodev.anitabi.ui.search
 
+import dev.adalbertodev.anitabi.data.ErrorKind
+
 data class AnimeSearchResult(
     val id: Int,
     val title: String,
@@ -10,5 +12,5 @@ sealed interface SearchUiState {
     data object Idle : SearchUiState
     data object Loading : SearchUiState
     data class Success(val results: List<AnimeSearchResult>) : SearchUiState
-    data class Error(val message: String) : SearchUiState
+    data class Error(val kind: ErrorKind) : SearchUiState
 }

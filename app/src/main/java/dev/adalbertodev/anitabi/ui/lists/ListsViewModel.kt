@@ -7,6 +7,8 @@ import dev.adalbertodev.anitabi.data.ApolloProvider
 import dev.adalbertodev.anitabi.data.EntryEvent
 import dev.adalbertodev.anitabi.data.EntryEvents
 import dev.adalbertodev.anitabi.data.EntryStatus
+import dev.adalbertodev.anitabi.data.ErrorKind
+import dev.adalbertodev.anitabi.data.errorKindOrNull
 import dev.adalbertodev.anitabi.graphql.AnimeListsQuery
 import dev.adalbertodev.anitabi.graphql.SaveEntryMutation
 import dev.adalbertodev.anitabi.graphql.ViewerQuery
@@ -24,7 +26,7 @@ sealed interface ListUiState {
         val activeFilter: ListFilter
     ) : ListUiState
 
-    data object Error : ListUiState
+    data class Error(val kind: ErrorKind) : ListUiState
 }
 
 data class CompletionEvent(val entryId: Int, val title: String)
@@ -98,12 +100,13 @@ class ListsViewModel : ViewModel() {
     }
 
     private suspend fun loadEntries() {
-        val viewerId = ApolloProvider.client.query(ViewerQuery()).execute().data?.Viewer?.id
+        val viewerId = ApolloProvider.client.query(ViewerQuery()).execute().data?.Viewer?.id ?: return
 
-        val lists = viewerId?.let {
-            ApolloProvider.client.query(AnimeListsQuery(userId = it))
-                .execute().data?.MediaListCollection?.lists
-        }
+        val response = ApolloProvider.client.query(AnimeListsQuery(userId = viewerId))
+            .execute()
+
+        val lists = response.data?.MediaListCollection?.lists
+
 
         if (lists != null) {
             allEntries = lists.asSequence()
@@ -115,9 +118,9 @@ class ListsViewModel : ViewModel() {
 
             applyFilter()
         } else {
-            if (allEntries.isEmpty()) {
-                _uiState.value = ListUiState.Error
-            } else {
+            _uiState.value = ListUiState.Error(response.errorKindOrNull() ?: ErrorKind.SERVER)
+
+            if (allEntries.isNotEmpty()) {
                 _errorMessage.value = "No se pudo actualizar."
             }
         }
@@ -134,6 +137,13 @@ class ListsViewModel : ViewModel() {
     fun setFilter(filter: ListFilter) {
         activeFilter = filter
         applyFilter()
+    }
+
+    fun retry() {
+        viewModelScope.launch {
+            _uiState.value = ListUiState.Loading
+            loadEntries()
+        }
     }
 
     fun incrementProgress(entryId: Int) {
@@ -191,7 +201,10 @@ class ListsViewModel : ViewModel() {
             }
         } else {
             replaceEntry(snapshot)
-            _errorMessage.value = "No se pudo guardar. Progreso revertido."
+            _errorMessage.value = when (response.errorKindOrNull()) {
+                ErrorKind.NETWORK -> "Sin conexión. Progreso invertido."
+                else -> "No se pudo guardar. Progreso invertido."
+            }
         }
 
         debounceJobs.remove(entryId)

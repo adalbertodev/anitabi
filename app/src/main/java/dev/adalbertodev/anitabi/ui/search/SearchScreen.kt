@@ -39,6 +39,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
+import dev.adalbertodev.anitabi.ui.common.ErrorState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,7 +102,7 @@ fun SearchScreen(
                         .align(Alignment.CenterHorizontally)
                 )
 
-                is SearchUiState.Error -> Text(state.message)
+                is SearchUiState.Error -> ErrorState(kind = state.kind, onRetry = ::launchSearch)
 
                 is SearchUiState.Success -> {
                     if (state.results.isEmpty()) {

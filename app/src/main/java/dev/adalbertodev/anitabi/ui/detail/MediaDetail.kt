@@ -1,6 +1,7 @@
 package dev.adalbertodev.anitabi.ui.detail
 
 import dev.adalbertodev.anitabi.data.EntryStatus
+import dev.adalbertodev.anitabi.data.ErrorKind
 
 data class MediaDetail(
     val mediaId: Int,
@@ -23,5 +24,5 @@ data class MyListEntry(
 sealed interface DetailUiState {
     data object Loading : DetailUiState
     data class Success(val detail: MediaDetail) : DetailUiState
-    data object Error : DetailUiState
+    data class Error(val kind: ErrorKind) : DetailUiState
 }
