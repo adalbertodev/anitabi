@@ -104,6 +104,7 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
             } else {
                 _errorMessage.value = when (response.errorKindOrNull()) {
                     ErrorKind.NETWORK -> "Sin conexión. No se pudo añadir a tu lista."
+                    ErrorKind.RATE_LIMIT -> "Demasiadas peticiones. No se pudo añadir a tu lista."
                     else -> "No se pudo añadir a tu lista."
                 }
             }
@@ -151,6 +152,7 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
             } else {
                 _errorMessage.value = when (response.errorKindOrNull()) {
                     ErrorKind.NETWORK -> "Sin conexión. No se pudo cambiar el estado."
+                    ErrorKind.RATE_LIMIT -> "Demasiadas peticiones. No se pudo cambiar el estado."
                     else -> "No se pudo cambiar el estado."
                 }
             }
@@ -198,6 +200,7 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
             } else {
                 _errorMessage.value = when (response.errorKindOrNull()) {
                     ErrorKind.NETWORK -> "Sin conexión. No se pudo guardar el progreso."
+                    ErrorKind.RATE_LIMIT -> "Demasiadas peticiones. No se pudo guardar el progreso."
                     else -> "No se pudo guardar el progreso."
                 }
             }
@@ -235,6 +238,7 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
             } else {
                 _errorMessage.value = when (response.errorKindOrNull()) {
                     ErrorKind.NETWORK -> "Sin conexión. No se pudo guardar la nota."
+                    ErrorKind.RATE_LIMIT -> "Demasiadas peticiones. No se pudo guardar la nota."
                     else -> "No se pudo guardar la nota."
                 }
             }
@@ -272,6 +276,7 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
             } else {
                 _errorMessage.value = when (response.errorKindOrNull()) {
                     ErrorKind.NETWORK -> "Sin conexión. No se pudo guardar las notas."
+                    ErrorKind.RATE_LIMIT -> "Demasiadas peticiones. No se pudo guardar las notas."
                     else -> "No se pudo guardar las notas."
                 }
             }

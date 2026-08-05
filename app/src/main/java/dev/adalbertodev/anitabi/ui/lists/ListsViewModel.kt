@@ -203,6 +203,7 @@ class ListsViewModel : ViewModel() {
             replaceEntry(snapshot)
             _errorMessage.value = when (response.errorKindOrNull()) {
                 ErrorKind.NETWORK -> "Sin conexión. Progreso invertido."
+                ErrorKind.RATE_LIMIT -> "Demasiadas peticiones. Progreso revertido."
                 else -> "No se pudo guardar. Progreso invertido."
             }
         }

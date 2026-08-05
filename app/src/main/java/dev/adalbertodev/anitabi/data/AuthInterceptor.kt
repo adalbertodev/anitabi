@@ -21,6 +21,12 @@ class AuthInterceptor(private val sessionStore: SessionStore) : HttpInterceptor 
             request
         }
 
-        return chain.proceed(finalRequest)
+        val response = chain.proceed(finalRequest)
+
+        if(response.statusCode == 401 && token != null) {
+            sessionStore.clear()
+        }
+
+        return response
     }
 }
