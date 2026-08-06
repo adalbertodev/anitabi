@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -52,6 +53,17 @@ fun ListsScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
     val completionEvent by viewModel.completionEvent.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val listState = rememberLazyListState()
+
+    var wasRefreshing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isRefreshing) {
+        if(wasRefreshing && !isRefreshing) {
+            listState.animateScrollToItem(0)
+        }
+
+        wasRefreshing = isRefreshing
+    }
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
@@ -124,11 +136,15 @@ fun ListsScreen(
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(s.activeFilter.emptyMessage, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                s.activeFilter.emptyMessage,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     } else {
                         LazyColumn(
-                            Modifier.fillMaxSize()
+                            state = listState,
+                            modifier = Modifier.fillMaxSize()
                         ) {
                             items(s.entries, key = { it.entryId }) { entry ->
                                 AnimeListCard(
